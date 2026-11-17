@@ -45,9 +45,7 @@
     .trophy-svg { width: 30px; height: 30px; filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5)); }
 
     /* Search Box */
-    .search-wrap {
-      position: relative; width: 100%; margin-bottom: 10px;
-    }
+    .search-wrap { position: relative; width: 100%; margin-bottom: 10px; }
     .search-icon {
       position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
       width: 18px; height: 18px; color: var(--muted); pointer-events: none;
@@ -59,7 +57,7 @@
     }
     .search-input:focus { border-color: var(--gold); }
 
-    /* Filter, Sort & Refresh Toolbar (RTL: Filter -> Sort -> Refresh on Left) */
+    /* Filter, Sort & Refresh Toolbar */
     .toolbar { display: grid; grid-template-columns: 1fr 1fr 42px; gap: 8px; align-items: center; }
     .tool-btn {
       background: var(--surface); border: 1px solid var(--border); color: var(--text);
@@ -76,31 +74,56 @@
     }
     .refresh-icon-btn:active { transform: rotate(180deg); border-color: var(--gold); }
 
-    /* Feed Container */
+    /* Feed Container & Swipeable Hot Hero Slider */
     .container { padding: 14px 16px; max-width: 600px; margin: 0 auto; }
-    .hero-card {
-      position: relative; border-radius: 18px; overflow: hidden; height: 235px;
-      margin-bottom: 16px; border: 1px solid var(--border); cursor: pointer;
+    .hero-slider {
+      position: relative; border-radius: 18px; overflow: hidden; height: 248px;
+      margin-bottom: 18px; border: 1px solid rgba(245, 158, 11, 0.35);
+      background: #000; touch-action: pan-y;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
     }
-    .hero-card img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-slide-inner {
+      width: 100%; height: 100%; position: relative; cursor: pointer;
+      animation: fadeSlide 0.28s ease-out;
+    }
+    @keyframes fadeSlide {
+      from { opacity: 0.45; transform: scale(1.02); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .hero-slide-inner img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .hero-overlay {
       position: absolute; inset: 0;
-      background: linear-gradient(to top, rgba(8,12,20,0.96) 15%, rgba(8,12,20,0.15) 100%);
-      display: flex; flex-direction: column; justify-content: flex-end; padding: 16px;
+      background: linear-gradient(to top, rgba(8,12,20,0.98) 14%, rgba(8,12,20,0.2) 100%);
+      display: flex; flex-direction: column; justify-content: flex-end; padding: 16px 16px 26px;
     }
     .bookmark-Quick {
-      position: absolute; top: 12px; left: 12px; z-index: 5;
-      background: rgba(8, 12, 20, 0.78); backdrop-filter: blur(6px);
+      position: absolute; top: 12px; left: 12px; z-index: 6;
+      background: rgba(8, 12, 20, 0.8); backdrop-filter: blur(6px);
       border: 1px solid var(--border); width: 36px; height: 36px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff;
     }
     .bookmark-Quick.saved { background: var(--gold); color: #000; border-color: var(--gold); }
-    .news-code-badge {
-      align-self: flex-start; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4);
-      color: var(--gold-light); font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 6px; margin-bottom: 8px;
+    .hot-tag-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+    .hot-badge {
+      background: linear-gradient(135deg, #f59e0b, #dc2626); color: #fff;
+      font-size: 0.7rem; font-weight: 900; padding: 3px 10px; border-radius: 6px;
+      box-shadow: 0 2px 10px rgba(220, 38, 38, 0.4);
     }
-    .hero-title { font-size: 1.04rem; font-weight: 800; line-height: 1.55; color: #fff; margin-bottom: 6px; }
-    .hero-date { font-size: 0.72rem; color: var(--muted); }
+    .news-code-badge {
+      background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.45);
+      color: var(--gold-light); font-size: 0.7rem; font-weight: 800; padding: 3px 9px; border-radius: 6px;
+    }
+    .hero-title { font-size: 1.02rem; font-weight: 800; line-height: 1.55; color: #fff; margin-bottom: 6px; }
+    .hero-date { font-size: 0.7rem; color: var(--muted); }
+    .slider-dots {
+      position: absolute; bottom: 9px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 6px; z-index: 6;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.35);
+      transition: all 0.25s ease; cursor: pointer;
+    }
+    .dot.active { width: 20px; border-radius: 10px; background: var(--gold); }
 
     /* News List */
     .news-list { display: flex; flex-direction: column; gap: 12px; }
@@ -135,9 +158,10 @@
       display: flex; justify-content: space-between; align-items: center;
       padding: 12px 16px; border-bottom: 1px solid var(--border);
     }
+    .article-actions { display: flex; align-items: center; gap: 8px; }
     .top-btn {
       background: var(--surface); color: var(--text); border: 1px solid var(--border);
-      padding: 7px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700;
+      padding: 7px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700;
       display: flex; align-items: center; gap: 6px; cursor: pointer;
     }
     .top-btn.saved { background: var(--gold); color: #000; border-color: var(--gold); }
@@ -196,7 +220,6 @@
       padding: 9px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 800;
       text-align: right; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
     }
-    .footer-link:active { background: #e2e8f0; }
 
     /* Filter / Sort / Info Sheet Modal */
     .sheet-backdrop {
@@ -218,7 +241,7 @@
     }
     .option-item.selected { border-color: var(--gold); color: var(--gold-light); background: rgba(245, 158, 11, 0.1); }
 
-    /* Exit Confirmation Toast (White Persian text at bottom) */
+    /* Exit Confirmation Toast */
     .exit-toast {
       position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
       background: rgba(15, 23, 42, 0.96); color: #ffffff;
@@ -228,11 +251,70 @@
       box-shadow: 0 8px 24px rgba(0,0,0,0.65);
       transition: opacity 0.22s ease, transform 0.22s ease;
     }
-    .exit-toast.show {
-      opacity: 1; transform: translateX(-50%) translateY(0);
+    .exit-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Post-Ad Golden Trophy + JAM Intro Splash Screen */
+    .jam-splash {
+      position: fixed; inset: 0; z-index: 9500;
+      background: radial-gradient(circle at center, #131d33 0%, #060911 75%);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .jam-splash.active { display: flex; }
+    .jam-emblem {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative;
+      opacity: 0.08;
+      filter: blur(6px) brightness(0.35);
+      transform: scale(0.84);
+    }
+    .jam-splash.animate .jam-emblem {
+      animation: jamFadeBrightShine 2.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .splash-trophy-svg {
+      width: 138px; height: 138px;
+      margin-bottom: 14px;
+    }
+    .splash-jam-title {
+      font-size: 2.75rem; font-weight: 900; letter-spacing: 9px; direction: ltr;
+      background: linear-gradient(90deg, #b45309 0%, #fde047 45%, #ffffff 50%, #fbbf24 55%, #b45309 100%);
+      background-size: 220% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      animation: textShimmer 2.2s linear infinite;
+    }
+    @keyframes textShimmer {
+      0% { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+    @keyframes jamFadeBrightShine {
+      0% {
+        opacity: 0.08;
+        filter: blur(7px) brightness(0.3);
+        transform: scale(0.84);
+      }
+      35% {
+        opacity: 0.55;
+        filter: blur(1.5px) brightness(0.95);
+        transform: scale(0.97);
+      }
+      68% {
+        opacity: 1;
+        filter: blur(0px) brightness(1.45) drop-shadow(0 0 38px rgba(251, 191, 36, 0.95)) drop-shadow(0 0 80px rgba(245, 158, 11, 0.6));
+        transform: scale(1.06);
+      }
+      85% {
+        opacity: 1;
+        filter: blur(0px) brightness(1.25) drop-shadow(0 0 28px rgba(251, 191, 36, 0.85));
+        transform: scale(1.02);
+      }
+      100% {
+        opacity: 0;
+        filter: blur(3px) brightness(1.5);
+        transform: scale(1.12);
+      }
     }
 
-    /* Mandatory Adsterra Overlay (15s forced, no visible timer) */
+    /* Mandatory Adsterra Overlay */
     .ad-overlay {
       position: fixed; inset: 0; background: #000; z-index: 9999;
       display: none; flex-direction: column;
@@ -256,6 +338,28 @@
   <div class="ad-overlay" id="ad-overlay">
     <button class="ad-close-btn" id="ad-close-btn" onclick="closeAd()">✕</button>
     <iframe class="ad-iframe" id="ad-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+  </div>
+
+  <!-- صفحه انیمیشن جام طلایی و نوشته JAM بلافاصله پس از بسته شدن تبلیغ اول -->
+  <div class="jam-splash" id="jam-splash">
+    <div class="jam-emblem">
+      <svg class="splash-trophy-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 10H46V24C46 33.5 39.5 40 32 40C24.5 40 18 33.5 18 24V10Z" fill="url(#splashGoldGrad)" stroke="#FEF08A" stroke-width="2"/>
+        <path d="M18 14H10V22C10 27 13.5 31 18 31" stroke="#FBBF24" stroke-width="3.8" stroke-linecap="round"/>
+        <path d="M46 14H54V22C54 27 50.5 31 46 31" stroke="#FBBF24" stroke-width="3.8" stroke-linecap="round"/>
+        <path d="M28 40H36V49H28V40Z" fill="#D97706"/>
+        <path d="M20 49H44L46 56H18L20 49Z" fill="url(#splashGoldGrad)" stroke="#FEF08A" stroke-width="1.5"/>
+        <circle cx="32" cy="22" r="7" fill="#FEF9C3" opacity="0.9"/>
+        <defs>
+          <linearGradient id="splashGoldGrad" x1="18" y1="10" x2="46" y2="56" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FEF08A"/>
+            <stop offset="0.5" stop-color="#F59E0B"/>
+            <stop offset="1" stop-color="#B45309"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="splash-jam-title">JAM</div>
+    </div>
   </div>
 
   <!-- اعلان خروج دو مرحله‌ای با خط سفید در پایین صفحه -->
@@ -345,11 +449,23 @@
     <div class="status">در حال بارگذاری اخبار...</div>
   </main>
 
-  <!-- صفحه کامل خبر داخل اپ -->
+  <!-- صفحه کامل خبر داخل اپ (دکمه اشتراک‌گذاری کنار نشان کردن) -->
   <div class="article-page" id="article-page">
     <div class="article-topbar">
       <button class="top-btn" onclick="closeArticle()">→ بازگشت</button>
-      <button class="top-btn" id="article-bookmark-btn">نشان کردن</button>
+      <div class="article-actions">
+        <button class="top-btn" id="article-share-btn" onclick="shareCurrentArticle()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <span>اشتراک‌گذاری</span>
+        </button>
+        <button class="top-btn" id="article-bookmark-btn">نشان کردن</button>
+      </div>
     </div>
     <div class="article-container" id="article-content"></div>
   </div>
@@ -395,7 +511,15 @@
     let currentFilter = 'ALL';
     let currentSort = 'NEWEST';
     let adOpen = false;
+    let splashOpen = false;
+    let isFirstStartupAd = true;
     let lastBackPressTime = 0;
+
+    // متغیرهای اسلایدر اخبار داغ بالای صفحه
+    let hotHeroList = [];
+    let currentHeroIndex = 0;
+    let touchStartX = 0;
+    let touchEndX = 0;
 
     const FILTER_NAMES = {
       'ALL': 'همه اخبار',
@@ -456,11 +580,27 @@
       adOpen = false;
       document.getElementById('ad-overlay').classList.remove('open');
       document.getElementById('ad-iframe').src = 'about:blank';
+
+      // اجرای انیمیشن جام طلایی + JAM بلافاصله پس از پایان تبلیغ ابتدایی برنامه
+      if (isFirstStartupAd) {
+        isFirstStartupAd = false;
+        playJamIntroSplash();
+      }
+    }
+
+    function playJamIntroSplash() {
+      splashOpen = true;
+      const splash = document.getElementById('jam-splash');
+      splash.classList.add('active', 'animate');
+      setTimeout(() => {
+        splash.classList.remove('active', 'animate');
+        splashOpen = false;
+      }, 2900);
     }
 
     // تایمر مخفی ۳۰ دقیقه‌ای استفاده از اپ
     setInterval(() => {
-      if (!adOpen) triggerMandatoryAd();
+      if (!adOpen && !splashOpen) triggerMandatoryAd();
     }, 30 * 60 * 1000);
 
     function updateSavedBadge() {
@@ -470,8 +610,10 @@
       badge.style.display = count > 0 ? 'flex' : 'none';
     }
 
-    function toggleBookmark(item, ev) {
+    function toggleBookmarkById(newsId, ev) {
       if (ev) ev.stopPropagation();
+      const item = allNews.find(n => String(n.news_id) === String(newsId)) || savedMap[String(newsId)];
+      if (!item) return;
       const key = String(item.news_id || item.link);
       if (savedMap[key]) {
         delete savedMap[key];
@@ -480,7 +622,8 @@
       }
       localStorage.setItem('fj_saved_news', JSON.stringify(savedMap));
       updateSavedBadge();
-      render();
+      renderHeroSlide();
+      renderListOnly();
       if (document.getElementById('left-drawer').classList.contains('open')) {
         renderSavedDrawer();
       }
@@ -488,6 +631,23 @@
 
     function isBookmarked(item) {
       return Boolean(savedMap[String(item.news_id || item.link)]);
+    }
+
+    // محاسبه امتیاز جذابیت و پربازدید بودن خبر برای اسلایدر بالای صفحه
+    function computeHotScore(item) {
+      let score = 0;
+      const text = `${item.title} ${(item.content || []).join(' ')}`;
+      const hotKeywords = [
+        "فوری", "رسمی", "پرسپولیس", "استقلال", "رئال مادرید", "بارسلونا", "منچستر",
+        "لیورپول", "آرسنال", "بایرن", "لیگ قهرمانان", "تیم ملی", "جام جهانی",
+        "نقل و انتقالات", "قرارداد", "ستاره", "دربی", "سپاهان", "تراکتور", "شوک", "رکورد"
+      ];
+      hotKeywords.forEach(kw => {
+        if (text.includes(kw)) score += 18;
+      });
+      if (Array.isArray(item.content)) score += item.content.length * 4;
+      if (item.image && !item.image.includes("unsplash.com")) score += 25;
+      return score + ((item.news_id || 1000) * 0.05);
     }
 
     async function loadNews(manual = false) {
@@ -527,43 +687,116 @@
         list.sort((a, b) => Number(isBookmarked(b)) - Number(isBookmarked(a)) || (b.news_id - a.news_id));
       }
 
-      window.currentFilteredList = list;
-
       if (!list.length) {
         container.innerHTML = `<div class="status">خبری با این مشخصات یافت نشد.</div>`;
         return;
       }
 
-      const hero = list[0];
-      const rest = list.slice(1);
+      // انتخاب تا ۵ خبر جذاب و پربازدید برای اسلایدر لمسی بالای صفحه
+      const scored = [...list].sort((a, b) => computeHotScore(b) - computeHotScore(a));
+      hotHeroList = scored.slice(0, Math.min(5, scored.length));
+      if (currentHeroIndex >= hotHeroList.length) currentHeroIndex = 0;
+
+      const hotIds = new Set(hotHeroList.map(h => h.news_id));
+      window.currentRemainingList = list.filter(n => !hotIds.has(n.news_id));
+      if (!window.currentRemainingList.length) {
+        window.currentRemainingList = list.slice(1);
+      }
+
+      container.innerHTML = `
+        <div class="hero-slider" id="hero-slider"></div>
+        <div class="news-list" id="news-list-box"></div>
+      `;
+
+      setupHeroTouchEvents();
+      renderHeroSlide();
+      renderListOnly();
+    }
+
+    function renderHeroSlide() {
+      const slider = document.getElementById('hero-slider');
+      if (!slider || !hotHeroList.length) return;
+      const hero = hotHeroList[currentHeroIndex];
       const heroSaved = isBookmarked(hero);
 
-      let html = `
-        <div class="hero-card" onclick="openArticle(0)">
-          <button class="bookmark-Quick ${heroSaved ? 'saved' : ''}" onclick="toggleBookmark(window.currentFilteredList[0], event)">
+      const dotsHtml = hotHeroList.map((_, idx) =>
+        `<span class="dot ${idx === currentHeroIndex ? 'active' : ''}" onclick="goToHeroSlide(${idx}, event)"></span>`
+      ).join('');
+
+      slider.innerHTML = `
+        <div class="hero-slide-inner" onclick="openArticleById(${hero.news_id})">
+          <button class="bookmark-Quick ${heroSaved ? 'saved' : ''}" onclick="toggleBookmarkById(${hero.news_id}, event)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="${heroSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2">
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
             </svg>
           </button>
           <img src="${hero.image}" onerror="this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80'" />
           <div class="hero-overlay">
-            <span class="news-code-badge">شماره خبر: ${hero.news_id}</span>
+            <div class="hot-tag-row">
+              <span class="hot-badge">🔥 داغ و پربازدید (${currentHeroIndex + 1}/${hotHeroList.length})</span>
+              <span class="news-code-badge">شماره خبر: ${hero.news_id}</span>
+            </div>
             <h2 class="hero-title">${hero.title}</h2>
             <div class="hero-date">${toShamsi(hero.timestamp)}</div>
           </div>
+          <div class="slider-dots">${dotsHtml}</div>
         </div>
-        <div class="news-list">
       `;
+    }
 
-      rest.forEach((item, idx) => {
+    function goToHeroSlide(idx, ev) {
+      if (ev) ev.stopPropagation();
+      currentHeroIndex = idx;
+      renderHeroSlide();
+    }
+
+    function nextHeroSlide() {
+      if (hotHeroList.length <= 1) return;
+      currentHeroIndex = (currentHeroIndex + 1) % hotHeroList.length;
+      renderHeroSlide();
+    }
+
+    function prevHeroSlide() {
+      if (hotHeroList.length <= 1) return;
+      currentHeroIndex = (currentHeroIndex - 1 + hotHeroList.length) % hotHeroList.length;
+      renderHeroSlide();
+    }
+
+    function setupHeroTouchEvents() {
+      const slider = document.getElementById('hero-slider');
+      if (!slider) return;
+
+      slider.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      slider.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchEndX - touchStartX;
+        if (Math.abs(diff) > 38) {
+          if (diff < 0) {
+            nextHeroSlide();
+          } else {
+            prevHeroSlide();
+          }
+        }
+      }, { passive: true });
+    }
+
+    function renderListOnly() {
+      const listBox = document.getElementById('news-list-box');
+      if (!listBox) return;
+      const rest = window.currentRemainingList || [];
+
+      listBox.innerHTML = rest.map(item => {
         const saved = isBookmarked(item);
-        html += `
-          <div class="news-item" onclick="openArticle(${idx + 1})">
+        return `
+          <div class="news-item" onclick="openArticleById(${item.news_id})">
             <img class="thumb" src="${item.image}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&q=80'" />
             <div class="item-content">
               <div class="item-top-bar">
                 <span class="item-code">شماره خبر: ${item.news_id}</span>
-                <button class="item-bookmark ${saved ? 'saved' : ''}" onclick="toggleBookmark(window.currentFilteredList[${idx + 1}], event)">
+                <button class="item-bookmark ${saved ? 'saved' : ''}" onclick="toggleBookmarkById(${item.news_id}, event)">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                   </svg>
@@ -574,14 +807,11 @@
             </div>
           </div>
         `;
-      });
-
-      html += `</div>`;
-      container.innerHTML = html;
+      }).join('');
     }
 
-    function openArticle(index, fromSaved = false) {
-      const item = fromSaved ? window.currentSavedList[index] : window.currentFilteredList[index];
+    function openArticleById(newsId) {
+      const item = allNews.find(n => String(n.news_id) === String(newsId)) || savedMap[String(newsId)];
       if (!item) return;
       window.currentOpenArticle = item;
 
@@ -614,6 +844,23 @@
       document.body.style.overflow = 'hidden';
     }
 
+    function shareCurrentArticle() {
+      const item = window.currentOpenArticle;
+      if (!item) return;
+      const paragraphs = Array.isArray(item.content) && item.content.length > 0 ? item.content : [item.summary || ''];
+      const shareText = `🏆 ${item.title}\n\n${paragraphs[0]}\n\n⚽ خبر شماره ${item.news_id} در اپلیکیشن Football Jam`;
+
+      if (navigator.share) {
+        navigator.share({
+          title: item.title,
+          text: shareText
+        }).catch(() => {});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareText);
+        showToast('متن خبر برای اشتراک‌گذاری کپی شد');
+      }
+    }
+
     function syncArticleBookmarkBtn() {
       const btn = document.getElementById('article-bookmark-btn');
       const item = window.currentOpenArticle;
@@ -622,7 +869,7 @@
       btn.className = `top-btn ${saved ? 'saved' : ''}`;
       btn.textContent = saved ? '✓ نشان‌شده' : 'نشان کردن';
       btn.onclick = () => {
-        toggleBookmark(item);
+        toggleBookmarkById(item.news_id);
         syncArticleBookmarkBtn();
       };
     }
@@ -647,20 +894,19 @@
     function renderSavedDrawer() {
       const box = document.getElementById('saved-list');
       const list = Object.values(savedMap).sort((a, b) => (b.news_id || 0) - (a.news_id || 0));
-      window.currentSavedList = list;
 
       if (!list.length) {
         box.innerHTML = `<div class="status">هنوز خبری را نشان نکرده‌اید.</div>`;
         return;
       }
 
-      box.innerHTML = `<div class="news-list">` + list.map((item, idx) => `
-        <div class="news-item" onclick="closeDrawer(); openArticle(${idx}, true)">
+      box.innerHTML = `<div class="news-list">` + list.map(item => `
+        <div class="news-item" onclick="closeDrawer(); openArticleById(${item.news_id})">
           <img class="thumb" src="${item.image}" style="width:72px;height:68px" onerror="this.src='https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=400&q=80'" />
           <div class="item-content">
             <div class="item-top-bar">
               <span class="item-code">شماره خبر: ${item.news_id}</span>
-              <button class="item-bookmark saved" style="color:#dc2626;font-weight:900" onclick="toggleBookmark(window.currentSavedList[${idx}], event)">✕</button>
+              <button class="item-bookmark saved" style="color:#dc2626;font-weight:900" onclick="toggleBookmarkById(${item.news_id}, event)">✕</button>
             </div>
             <h3 class="item-title" style="font-size:0.82rem">${item.title}</h3>
           </div>
@@ -687,6 +933,7 @@
 
     function setFilter(k) {
       currentFilter = k;
+      currentHeroIndex = 0;
       document.getElementById('filter-label').textContent = `فیلتر: ${FILTER_NAMES[k]}`;
       closeSheet();
       render();
@@ -750,11 +997,9 @@
       document.getElementById('sheet-backdrop').classList.remove('open');
     }
 
-    // مدیریت هوشمند دکمه بازگشت گوشی:
-    // ۱. اگر داخل خبر، منو یا پنجره باشد -> به صفحه اصلی برمی‌گردد
-    // ۲. اگر در صفحه اصلی باشد -> بار اول اعلان سفیدرنگ می‌دهد و فقط در بار دوم خارج می‌شود
+    // مدیریت هوشمند دکمه بازگشت گوشی
     window.handleAndroidBack = function() {
-      if (adOpen) return "BLOCKED";
+      if (adOpen || splashOpen) return "BLOCKED";
       if (document.getElementById('sheet-backdrop').classList.contains('open')) {
         closeSheet();
         return "HANDLED";
