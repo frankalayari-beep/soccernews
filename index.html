@@ -29,7 +29,7 @@
     .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .drawer-btn {
       background: var(--surface); border: 1px solid var(--border); color: var(--text);
-      width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+      width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
       cursor: pointer; position: relative;
     }
     .saved-count-dot {
@@ -38,9 +38,10 @@
       display: none; align-items: center; justify-content: center;
     }
     .brand-logo {
-      display: flex; align-items: center; gap: 6px; direction: ltr;
-      font-size: 1.35rem; font-weight: 900; letter-spacing: 1.5px; color: #fff;
+      display: flex; align-items: center; gap: 7px; direction: ltr;
+      font-size: 1.32rem; font-weight: 900; letter-spacing: 1.5px; color: #fff;
     }
+    .ball-svg { width: 25px; height: 25px; filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.25)); }
     .trophy-svg { width: 30px; height: 30px; filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5)); }
 
     /* Search Box */
@@ -58,15 +59,22 @@
     }
     .search-input:focus { border-color: var(--gold); }
 
-    /* Filter & Sort Toolbar */
-    .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    /* Filter, Sort & Refresh Toolbar (RTL: Filter -> Sort -> Refresh on Left) */
+    .toolbar { display: grid; grid-template-columns: 1fr 1fr 42px; gap: 8px; align-items: center; }
     .tool-btn {
       background: var(--surface); border: 1px solid var(--border); color: var(--text);
-      padding: 9px 12px; border-radius: 11px; font-size: 0.82rem; font-weight: 700;
-      display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+      height: 40px; padding: 0 10px; border-radius: 11px; font-size: 0.78rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+      white-space: nowrap; overflow: hidden;
     }
-    .tool-btn.active-filter { border-color: var(--gold); color: var(--gold-light); }
-    .tool-btn svg { width: 17px; height: 17px; color: var(--gold); }
+    .tool-btn svg { width: 16px; height: 16px; color: var(--gold); flex-shrink: 0; }
+    .refresh-icon-btn {
+      background: var(--surface); border: 1px solid var(--border); color: var(--gold-light);
+      width: 42px; height: 40px; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: transform 0.25s ease;
+    }
+    .refresh-icon-btn:active { transform: rotate(180deg); border-color: var(--gold); }
 
     /* Feed Container */
     .container { padding: 14px 16px; max-width: 600px; margin: 0 auto; }
@@ -145,34 +153,50 @@
     }
     .article-paragraph { font-size: 0.95rem; line-height: 2; color: #cbd5e1; margin-bottom: 16px; text-align: justify; user-select: text; }
 
-    /* Left Slide-out Drawer */
+    /* Left Slide-out Drawer (Silver Metallic Theme) */
     .drawer-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 110;
       display: none;
     }
     .drawer-backdrop.open { display: block; }
     .left-drawer {
-      position: fixed; top: 0; bottom: 0; left: 0; width: 84%; max-width: 340px;
-      background: var(--surface); border-right: 1px solid var(--border); z-index: 120;
+      position: fixed; top: 0; bottom: 0; left: 0; width: 85%; max-width: 340px;
+      background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%);
+      color: #0f172a;
+      border-right: 2px solid #94a3b8; z-index: 120;
       transform: translateX(-100%); transition: transform 0.25s ease;
       display: flex; flex-direction: column;
+      box-shadow: 6px 0 24px rgba(0,0,0,0.5);
     }
     .left-drawer.open { transform: translateX(0); }
     .drawer-header {
-      padding: 16px; border-bottom: 1px solid var(--border);
+      padding: 14px 16px; border-bottom: 1px solid #94a3b8;
+      background: rgba(255, 255, 255, 0.55);
       display: flex; justify-content: space-between; align-items: center;
     }
-    .drawer-title { font-size: 0.95rem; font-weight: 800; color: var(--gold-light); }
+    .drawer-title { font-size: 0.95rem; font-weight: 900; color: #0f172a; }
+    .drawer-close-btn {
+      background: #0f172a; color: #fff; border: none;
+      width: 32px; height: 32px; border-radius: 8px; font-weight: 800; cursor: pointer;
+    }
     .drawer-body { flex: 1; overflow-y: auto; padding: 12px; }
+    .drawer-body .news-item {
+      background: #f8fafc; border: 1px solid #94a3b8;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    }
+    .drawer-body .item-title { color: #0f172a; }
+    .drawer-body .item-code { color: #b45309; }
+    .drawer-body .status { color: #334155; font-weight: 700; }
     .drawer-footer {
-      padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg);
-      display: flex; flex-direction: column; gap: 8px;
+      padding: 12px 14px; border-top: 1px solid #94a3b8; background: #cbd5e1;
+      display: flex; flex-direction: column; gap: 7px;
     }
     .footer-link {
-      background: var(--surface); border: 1px solid var(--border); color: var(--text);
-      padding: 9px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700;
+      background: #f8fafc; border: 1px solid #94a3b8; color: #0f172a;
+      padding: 9px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 800;
       text-align: right; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
     }
+    .footer-link:active { background: #e2e8f0; }
 
     /* Filter / Sort / Info Sheet Modal */
     .sheet-backdrop {
@@ -193,6 +217,20 @@
       display: flex; justify-content: space-between; align-items: center; cursor: pointer;
     }
     .option-item.selected { border-color: var(--gold); color: var(--gold-light); background: rgba(245, 158, 11, 0.1); }
+
+    /* Exit Confirmation Toast (White Persian text at bottom) */
+    .exit-toast {
+      position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: rgba(15, 23, 42, 0.96); color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      padding: 11px 20px; border-radius: 30px; font-size: 0.84rem; font-weight: 800;
+      z-index: 5000; opacity: 0; pointer-events: none; white-space: nowrap;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.65);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+    .exit-toast.show {
+      opacity: 1; transform: translateX(-50%) translateY(0);
+    }
 
     /* Mandatory Adsterra Overlay (15s forced, no visible timer) */
     .ad-overlay {
@@ -220,11 +258,20 @@
     <iframe class="ad-iframe" id="ad-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
   </div>
 
+  <!-- اعلان خروج دو مرحله‌ای با خط سفید در پایین صفحه -->
+  <div class="exit-toast" id="exit-toast">جهت خروج از برنامه، یک‌بار دیگر دکمه بازگشت را بزنید</div>
+
   <!-- هدر اصلی اپ -->
   <header class="app-bar">
     <div class="top-row">
-      <!-- برند FOOTBALL + جام طلایی به جای JAM -->
+      <!-- برند: توپ فوتبال در چپ + FOOTBALL + جام طلایی در راست -->
       <div class="brand-logo">
+        <svg class="ball-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="32" r="28" fill="#F8FAFC" stroke="#94A3B8" stroke-width="3"/>
+          <polygon points="32,18 43,26 39,39 25,39 21,26" fill="#0F172A"/>
+          <path d="M32 4V18M43 26L56 20M39 39L48 52M25 39L16 52M21 26L8 20" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="32" cy="32" r="28" stroke="#0F172A" stroke-width="3"/>
+        </svg>
         <span>FOOTBALL</span>
         <svg class="trophy-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M18 10H46V24C46 33.5 39.5 40 32 40C24.5 40 18 33.5 18 24V10Z" fill="url(#goldGrad)" stroke="#FDE68A" stroke-width="2"/>
@@ -243,11 +290,13 @@
         </svg>
       </div>
 
-      <!-- دکمه باز کردن زبانه سمت چپ (اخبار نشان‌شده) -->
-      <button class="drawer-btn" onclick="openDrawer()" title="اخبار نشان‌شده">
+      <!-- زبانه سه خطی بالا سمت چپ -->
+      <button class="drawer-btn" onclick="openDrawer()" title="منو و اخبار نشان‌شده">
         <span class="saved-count-dot" id="saved-badge">0</span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
       </button>
     </div>
@@ -261,7 +310,7 @@
       <input type="text" id="search" class="search-input" placeholder="جستجو در اخبار" />
     </div>
 
-    <!-- دکمه‌های فیلتر و مرتب‌سازی با آیکون اختصاصی -->
+    <!-- نوار ابزار: فیلتر (راست) + مرتب‌سازی (وسط) + دکمه بروزرسانی (چپِ مرتب‌سازی) -->
     <div class="toolbar">
       <button class="tool-btn" id="filter-btn" onclick="openFilterSheet()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -269,6 +318,7 @@
         </svg>
         <span id="filter-label">فیلتر: همه اخبار</span>
       </button>
+
       <button class="tool-btn" id="sort-btn" onclick="openSortSheet()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <line x1="4" y1="6" x2="13" y2="6"></line>
@@ -279,6 +329,14 @@
         </svg>
         <span id="sort-label">مرتب‌سازی: جدیدترین</span>
       </button>
+
+      <button class="refresh-icon-btn" onclick="loadNews(true)" title="بروزرسانی اخبار">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -287,7 +345,7 @@
     <div class="status">در حال بارگذاری اخبار...</div>
   </main>
 
-  <!-- صفحه کامل خبر داخل اپ (کلید بازگشت در بالا راست) -->
+  <!-- صفحه کامل خبر داخل اپ -->
   <div class="article-page" id="article-page">
     <div class="article-topbar">
       <button class="top-btn" onclick="closeArticle()">→ بازگشت</button>
@@ -296,15 +354,19 @@
     <div class="article-container" id="article-content"></div>
   </div>
 
-  <!-- منوی کشویی سمت چپ (اخبار نشان‌شده + قوانین + تماس با ما) -->
+  <!-- منوی کشویی سمت چپ با پس‌زمینه نقره‌ای -->
   <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
   <aside class="left-drawer" id="left-drawer">
     <div class="drawer-header">
       <span class="drawer-title">اخبار نشان‌شده</span>
-      <button class="top-btn" onclick="closeDrawer()">✕</button>
+      <button class="drawer-close-btn" onclick="closeDrawer()">✕</button>
     </div>
     <div class="drawer-body" id="saved-list"></div>
     <div class="drawer-footer">
+      <button class="footer-link" onclick="openInfoModal('about')">
+        <span>درباره ما</span>
+        <span>❮</span>
+      </button>
       <button class="footer-link" onclick="openInfoModal('rules')">
         <span>قوانین و مقررات</span>
         <span>❮</span>
@@ -316,7 +378,7 @@
     </div>
   </aside>
 
-  <!-- پنجره پایین‌صفحه برای فیلتر، مرتب‌سازی، قوانین و تماس با ما -->
+  <!-- پنجره پایین‌صفحه برای فیلتر، مرتب‌سازی، درباره ما، قوانین و تماس با ما -->
   <div class="sheet-backdrop" id="sheet-backdrop" onclick="if(event.target===this) closeSheet()">
     <div class="sheet-box" id="sheet-box"></div>
   </div>
@@ -333,6 +395,7 @@
     let currentFilter = 'ALL';
     let currentSort = 'NEWEST';
     let adOpen = false;
+    let lastBackPressTime = 0;
 
     const FILTER_NAMES = {
       'ALL': 'همه اخبار',
@@ -349,7 +412,6 @@
       'SAVED_FIRST': 'نشان‌شده‌ها در صدر'
     };
 
-    // تبدیل تاریخ میلادی به تاریخ شمسی ایرانی
     function toShamsi(isoStr) {
       try {
         const d = isoStr ? new Date(isoStr) : new Date();
@@ -361,6 +423,16 @@
       } catch (e) {
         return '';
       }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('exit-toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
     }
 
     // سیستم تبلیغ اجباری ۱۵ ثانیه‌ای بدون نمایش تایمر به کاربر
@@ -418,8 +490,9 @@
       return Boolean(savedMap[String(item.news_id || item.link)]);
     }
 
-    async function loadNews() {
+    async function loadNews(manual = false) {
       const container = document.getElementById('app-content');
+      if (manual) showToast('در حال بروزرسانی آخرین اخبار...');
       try {
         const res = await fetch(REMOTE_JSON_URL + '?t=' + Date.now());
         if (!res.ok) throw new Error();
@@ -559,7 +632,7 @@
       document.body.style.overflow = '';
     }
 
-    // منوی سمت چپ (اخبار نشان‌شده)
+    // منوی سمت چپ (پس‌زمینه نقره‌ای)
     function openDrawer() {
       renderSavedDrawer();
       document.getElementById('drawer-backdrop').classList.add('open');
@@ -587,7 +660,7 @@
           <div class="item-content">
             <div class="item-top-bar">
               <span class="item-code">شماره خبر: ${item.news_id}</span>
-              <button class="item-bookmark saved" onclick="toggleBookmark(window.currentSavedList[${idx}], event)">✕</button>
+              <button class="item-bookmark saved" style="color:#dc2626;font-weight:900" onclick="toggleBookmark(window.currentSavedList[${idx}], event)">✕</button>
             </div>
             <h3 class="item-title" style="font-size:0.82rem">${item.title}</h3>
           </div>
@@ -595,7 +668,7 @@
       `).join('') + `</div>`;
     }
 
-    // پنجره فیلتر و مرتب‌سازی و اطلاعات
+    // پنجره فیلتر، مرتب‌سازی، درباره ما، قوانین و تماس با ما
     function openFilterSheet() {
       const box = document.getElementById('sheet-box');
       box.innerHTML = `
@@ -645,7 +718,14 @@
     function openInfoModal(type) {
       closeDrawer();
       const box = document.getElementById('sheet-box');
-      if (type === 'rules') {
+      if (type === 'about') {
+        box.innerHTML = `
+          <div class="sheet-title">درباره ما</div>
+          <p class="article-paragraph" style="font-size:0.86rem">
+            اپلیکیشن <strong>Football Jam</strong> مرجع تخصصی و هوشمند پوشش لحظه‌ای اخبار فوتبال ایران و جهان است. هدف ما ارائه سریع، دقیق و دسته‌بندی‌شده مهم‌ترین رویدادهای فوتبالی، نقل‌وانتقالات و رقابت‌های باشگاهی و ملی در محیطی مدرن و کاربرپسند برای علاقه‌مندان به فوتبال است.
+          </p>
+        `;
+      } else if (type === 'rules') {
         box.innerHTML = `
           <div class="sheet-title">قوانین و مقررات و حریم خصوصی</div>
           <p class="article-paragraph" style="font-size:0.86rem">
@@ -670,7 +750,9 @@
       document.getElementById('sheet-backdrop').classList.remove('open');
     }
 
-    // کنترل دکمه بازگشت خودِ گوشی اندروید
+    // مدیریت هوشمند دکمه بازگشت گوشی:
+    // ۱. اگر داخل خبر، منو یا پنجره باشد -> به صفحه اصلی برمی‌گردد
+    // ۲. اگر در صفحه اصلی باشد -> بار اول اعلان سفیدرنگ می‌دهد و فقط در بار دوم خارج می‌شود
     window.handleAndroidBack = function() {
       if (adOpen) return "BLOCKED";
       if (document.getElementById('sheet-backdrop').classList.contains('open')) {
@@ -681,7 +763,19 @@
         closeDrawer();
         return "HANDLED";
       }
-      return "EXIT";
+      if (document.getElementById('article-page').classList.contains('open')) {
+        closeArticle();
+        return "HANDLED";
+      }
+
+      const now = Date.now();
+      if (now - lastBackPressTime < 2400) {
+        return "EXIT";
+      } else {
+        lastBackPressTime = now;
+        showToast("جهت خروج از برنامه، یک‌بار دیگر دکمه بازگشت را بزنید");
+        return "HANDLED";
+      }
     };
 
     document.getElementById('search').addEventListener('input', render);
