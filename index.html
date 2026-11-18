@@ -484,12 +484,11 @@
     <div class="status" id="loading-status">در حال بارگذاری اخبار...</div>
   </main>
 
-  <!-- صفحه کامل خبر داخل اپ (همراه با پرچم‌های ترجمه، اشتراک‌گذاری و نشان کردن) -->
+  <!-- صفحه کامل خبر داخل اپ -->
   <div class="article-page" id="article-page">
     <div class="article-topbar">
       <button class="top-btn" id="article-back-btn" onclick="closeArticle()">→ بازگشت</button>
       <div class="article-actions">
-        <!-- پرچم‌های ایران و انگلیس داخل صفحه خبر برای ترجمه آنی همان خبر -->
         <div class="lang-switch" style="height:36px;padding:2px">
           <button class="flag-btn active" id="flag-fa-art" style="width:28px;height:28px" onclick="setLanguage('fa')">
             <svg class="flag-svg" viewBox="0 0 28 20"><rect width="28" height="20" fill="#fff"/><rect width="28" height="6.66" y="0" fill="#239f40"/><rect width="28" height="6.66" y="13.34" fill="#da0000"/><circle cx="14" cy="10" r="2.2" fill="none" stroke="#da0000" stroke-width="1.1"/></svg>
@@ -546,7 +545,8 @@
 
   <script>
     const GITHUB_REPO = "frankalayari-beep/soccernews";
-    const REMOTE_JSON_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/news.json`;
+    const CDN_JSON_URL = `https://cdn.jsdelivr.net/gh/${GITHUB_REPO}@main/news.json`;
+    const FALLBACK_JSON_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/news.json`;
 
     // لینک تبلیغاتی اختصاصی شما
     const ADSTERRA_URL = "https://asiafilm.org/4/052064ca4ffd0916d363a8d4ca962a64";
@@ -566,7 +566,6 @@
     let touchStartX = 0;
     let touchEndX = 0;
 
-    // دیکشنری دوطرفه رابط کاربری (فارسی و انگلیسی)
     const UI_TEXT = {
       fa: {
         dir: 'rtl',
@@ -664,7 +663,6 @@
       }
     }
 
-    // دریافت تیتر و متن خبر بر اساس زبان انتخاب‌شده
     function getItemTitle(item) {
       if (currentLang === 'en') {
         return item.title_en || item.original_title || item.title;
@@ -680,7 +678,6 @@
       return Array.isArray(item.content) && item.content.length > 0 ? item.content : [item.summary || ''];
     }
 
-    // مترجم آنی سمت کلاینت برای اخباری که هنوز نسخه انگلیسی ندارند
     async function translateOnTheFly(text, sl, tl) {
       if (!text) return '';
       try {
@@ -697,7 +694,6 @@
       const missing = allNews.filter(n => !n.title_en);
       if (!missing.length) return;
 
-      // ترجمه دسته‌ای تیترها در یک درخواست واحد برای سرعت بالا
       const separator = " ||| ";
       const batchTitles = missing.map(n => n.title).join(separator);
       const translatedBatch = await translateOnTheFly(batchTitles, 'fa', 'en');
@@ -719,7 +715,6 @@
       document.documentElement.lang = lang;
       document.documentElement.dir = t.dir;
 
-      // وضعیت فعال بودن پرچم ایران و انگلیس
       ['main', 'art'].forEach(pos => {
         const btnFa = document.getElementById(`flag-fa-${pos}`);
         const btnEn = document.getElementById(`flag-en-${pos}`);
@@ -729,7 +724,6 @@
         }
       });
 
-      // بروزرسانی متون رابط کاربری
       document.getElementById('search').placeholder = t.searchPlaceholder;
       document.getElementById('filter-label').textContent = `${t.filterPrefix}: ${t.filters[currentFilter]}`;
       document.getElementById('sort-label').textContent = `${t.sortPrefix}: ${t.sorts[currentSort]}`;
@@ -858,7 +852,11 @@
       const t = UI_TEXT[currentLang];
       if (manual) showToast(t.syncing);
       try {
-        const res = await fetch(REMOTE_JSON_URL + '?t=' + Date.now());
+        const cacheBuster = manual ? Date.now() : Math.floor(Date.now() / 60000);
+        let res = await fetch(`${CDN_JSON_URL}?t=${cacheBuster}`);
+        if (!res.ok) {
+          res = await fetch(`${FALLBACK_JSON_URL}?t=${Date.now()}`);
+        }
         if (!res.ok) throw new Error();
         const raw = await res.json();
         allNews = raw.map((item, idx) => ({
@@ -1023,7 +1021,6 @@
       window.currentOpenArticle = item;
       const t = UI_TEXT[currentLang];
 
-      // اگر زبان انگلیسی است و متن کامل این خبر هنوز ترجمه نشده، در لحظه ترجمه شود
       if (currentLang === 'en' && (!item.content_en || !item.content_en.length)) {
         const rawFa = Array.isArray(item.content) && item.content.length ? item.content.join('\n\n') : (item.summary || '');
         const trBody = await translateOnTheFly(rawFa, 'fa', 'en');
