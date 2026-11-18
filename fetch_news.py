@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# منابع خبری بین‌المللی و داخلی (نام منابع در اپ نمایش داده نمی‌شود)
 RSS_FEEDS = [
     {"url": "https://www.varzesh3.com/rss/all", "lang": "fa", "default_cat": "iran"},
     {"url": "https://www.mehrnews.com/rss/tp/9", "lang": "fa", "default_cat": "iran"},
@@ -33,19 +32,19 @@ DEFAULT_IMAGE = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?au
 def is_persian(text):
     return bool(re.search(r'[\u0600-\u06FF]', text or ""))
 
-def translate_to_persian(text):
+def translate_text(text, sl="en", tl="fa"):
     if not text or not text.strip():
         return ""
     text = text.strip()[:2500]
     url = "https://translate.googleapis.com/translate_a/single"
-    params = {"client": "gtx", "sl": "en", "tl": "fa", "dt": "t", "q": text}
+    params = {"client": "gtx", "sl": sl, "tl": tl, "dt": "t", "q": text}
     try:
         res = requests.get(url, params=params, headers=HEADERS, timeout=12)
         if res.status_code == 200:
             data = res.json()
             return "".join([part[0] for part in data[0] if part[0]]).strip()
     except Exception as e:
-        print(f"Translate error: {e}")
+        print(f"Translate error ({sl}->{tl}): {e}")
     return ""
 
 def clean_html(raw_html):
@@ -54,8 +53,8 @@ def clean_html(raw_html):
     soup = BeautifulSoup(raw_html, "html.parser")
     return re.sub(r'\s+', ' ', soup.get_text(separator=" ", strip=True))
 
-def detect_category(title, summary, default_cat):
-    text = f"{title} {summary}"
+def detect_category(title_fa, summary_fa, default_cat):
+    text = f"{title_fa} {summary_fa}"
     if any(k in text for k in ["نقل و انتقالات", "قرارداد", "پیوست", "تمدید", "پیشنهاد", "خرید جدید", "جدا شد"]):
         return "transfer"
     if any(k in text for k in ["لیگ قهرمانان", "چمپیونزلیگ", "اروپا", "رئال مادرید", "بارسلونا", "منچستر", "آرسنال", "لیورپول", "بایرن", "اینتر", "میلان"]):
@@ -140,7 +139,6 @@ def main():
                 if not orig_title:
                     continue
 
-                # فیلتر اخبار غیرفوتبالی در خبرگزاری‌های ورزشی ایران
                 if lang == "fa":
                     non_football = ["کشتی", "والیبال", "بسکتبال", "تکواندو", "وزنه برداری", "وزنه‌برداری", "کاراته", "شطرنج", "تنیس", "دوومیدانی"]
                     if any(nf in orig_title for nf in non_football):
@@ -154,15 +152,29 @@ def main():
                     fa_paragraphs = [p for p in raw_paragraphs if is_persian(p)]
                     if not fa_paragraphs and is_persian(orig_summary):
                         fa_paragraphs = [orig_summary]
+                    if not fa_paragraphs:
+                        continue
+
+                    # ترجمه اخبار فارسی به انگلیسی برای حالت انگلیسی اپ
+                    en_title = translate_text(fa_title, sl="fa", tl="en") or fa_title
+                    full_fa_text = "\n\n".join(fa_paragraphs)
+                    en_full_text = translate_text(full_fa_text, sl="fa", tl="en")
+                    en_paragraphs = [p.strip() for p in en_full_text.split("\n") if len(p.strip()) > 15] or fa_paragraphs
                 else:
-                    fa_title = translate_to_persian(orig_title)
+                    en_title = orig_title
+                    en_paragraphs = [p.strip() for p in raw_paragraphs if len(p.strip()) > 15]
+                    if not en_paragraphs and orig_summary:
+                        en_paragraphs = [orig_summary]
+
+                    # ترجمه اخبار انگلیسی به فارسی برای حالت فارسی اپ
+                    fa_title = translate_text(orig_title, sl="en", tl="fa")
                     if not is_persian(fa_title):
                         continue
-                    full_en_text = "\n\n".join(raw_paragraphs)
-                    fa_full_text = translate_to_persian(full_en_text)
+                    full_en_text = "\n\n".join(en_paragraphs)
+                    fa_full_text = translate_text(full_en_text, sl="en", tl="fa")
                     fa_paragraphs = [p.strip() for p in fa_full_text.split("\n") if len(p.strip()) > 20]
                     if not fa_paragraphs:
-                        fb = translate_to_persian(orig_summary)
+                        fb = translate_text(orig_summary, sl="en", tl="fa")
                         if is_persian(fb):
                             fa_paragraphs = [fb]
 
@@ -170,12 +182,16 @@ def main():
                     continue
 
                 fa_summary = fa_paragraphs[0][:200] + "..." if len(fa_paragraphs[0]) > 200 else fa_paragraphs[0]
+                en_summary = en_paragraphs[0][:200] + "..." if len(en_paragraphs[0]) > 200 else en_paragraphs[0]
                 category = detect_category(fa_title, fa_summary, default_cat)
 
                 new_items.append({
                     "title": fa_title,
                     "summary": fa_summary,
                     "content": fa_paragraphs,
+                    "title_en": en_title,
+                    "summary_en": en_summary,
+                    "content_en": en_paragraphs,
                     "category": category,
                     "link": link,
                     "image": best_image,
@@ -187,14 +203,12 @@ def main():
         except Exception as e:
             print(f"Error parsing {feed_url}: {e}")
 
-    # شماره‌گذاری ترتیبی اخبار جدید بر اساس زمان انتشار
     new_items.reverse()
     for item in new_items:
         max_news_id += 1
         item["news_id"] = max_news_id
     new_items.reverse()
 
-    # اطمینان از داشتن شماره خبر برای اخبار قبلی
     for idx, item in enumerate(reversed(existing_news)):
         if "news_id" not in item:
             item["news_id"] = 1001 + idx
@@ -204,7 +218,7 @@ def main():
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(updated_news, f, ensure_ascii=False, indent=2)
 
-    print(f"Saved {len(updated_news)} articles. Latest News ID: {max_news_id}")
+    print(f"Saved {len(updated_news)} bilingual articles. Latest News ID: {max_news_id}")
 
 if __name__ == "__main__":
     main()
