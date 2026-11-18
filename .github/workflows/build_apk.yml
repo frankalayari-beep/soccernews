@@ -2,6 +2,15 @@ name: Build Signed Release APK (Bazaar & Myket)
 
 on:
   workflow_dispatch:
+    inputs:
+      version_code:
+        description: 'شماره نسخه عددی (نسخه اول: 1 | آپدیت‌های بعدی: 2، 3 و...)'
+        required: true
+        default: '1'
+      version_name:
+        description: 'نام نسخه نمایشی به کاربر (مثلاً 1.0 یا 1.1)'
+        required: true
+        default: '1.0'
 
 jobs:
   build-android:
@@ -119,11 +128,19 @@ jobs:
           }
           EOF
 
-      - name: Prepare Permanent Keystore & Sign Release APK
+      - name: Apply Version Code, Permanent Keystore & Sign Release APK
         working-directory: ./android
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
+          VER_CODE="${{ github.event.inputs.version_code }}"
+          VER_NAME="${{ github.event.inputs.version_name }}"
+          VER_CODE=${VER_CODE:-1}
+          VER_NAME=${VER_NAME:-"1.0"}
+
+          sed -i -E "s/versionCode[[:space:]]*=?[[:space:]]*[0-9]+/versionCode $VER_CODE/g" app/build.gradle
+          sed -i -E "s/versionName[[:space:]]*=?[[:space:]]*\"[^\"]+\"/versionName \"$VER_NAME\"/g" app/build.gradle
+
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "Using permanent keystore from GitHub Secrets..."
             echo "$KEYSTORE_BASE64" | base64 -d > release-key.jks
