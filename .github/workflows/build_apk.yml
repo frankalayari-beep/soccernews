@@ -34,22 +34,19 @@ jobs:
         run: |
           pip install pillow
           python3 - << 'EOF'
-          import os
+          import os, shutil
           from PIL import Image, ImageDraw
 
           def create_trophy_icon(size=512):
               img = Image.new("RGBA", (size, size), (10, 15, 28, 255))
               draw = ImageDraw.Draw(img)
 
-              # قاب دور طلایی
               margin = int(size * 0.04)
               draw.rounded_rectangle([margin, margin, size-margin, size-margin], radius=int(size*0.22), fill=(16, 24, 42, 255), outline=(245, 158, 11, 255), width=int(size*0.025))
 
-              # دسته‌های جام
               draw.arc([int(size*0.16), int(size*0.24), int(size*0.42), int(size*0.54)], start=90, end=270, fill=(245, 158, 11, 255), width=int(size*0.045))
               draw.arc([int(size*0.58), int(size*0.24), int(size*0.84), int(size*0.54)], start=270, end=90, fill=(245, 158, 11, 255), width=int(size*0.045))
 
-              # بدنه اصلی جام طلایی
               draw.polygon([
                   (int(size*0.27), int(size*0.20)),
                   (int(size*0.73), int(size*0.20)),
@@ -58,12 +55,10 @@ jobs:
               ], fill=(251, 191, 36, 255))
               draw.pieslice([int(size*0.34), int(size*0.38), int(size*0.66), int(size*0.64)], start=0, end=180, fill=(245, 158, 11, 255))
 
-              # گوی بالای جام (سبک جام جهانی)
               r = int(size*0.13)
               cx, cy = int(size*0.5), int(size*0.33)
               draw.ellipse([cx-r, cy-r, cx+r, cy+r], fill=(254, 240, 138, 255), outline=(217, 119, 6, 255), width=int(size*0.015))
 
-              # پایه جام
               draw.rectangle([int(size*0.45), int(size*0.58), int(size*0.55), int(size*0.72)], fill=(217, 119, 6, 255))
               draw.polygon([
                   (int(size*0.32), int(size*0.72)),
@@ -89,7 +84,6 @@ jobs:
 
           anydpi = os.path.join(res_dir, "mipmap-anydpi-v26")
           if os.path.exists(anydpi):
-              import shutil
               shutil.rmtree(anydpi)
           EOF
 
@@ -125,13 +119,22 @@ jobs:
           }
           EOF
 
-      - name: Generate Keystore & Sign Release APK
+      - name: Prepare Permanent Keystore & Sign Release APK
         working-directory: ./android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          keytool -genkey -v -keystore release-key.jks -keyalg RSA -keysize 2048 -validity 10000 \
-            -alias appkey -storepass 123456 -keypass 123456 \
-            -dname "CN=FootballJam, OU=Mobile, O=SportApp, L=Mashhad, S=Khorasan, C=IR"
-          
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Using permanent keystore from GitHub Secrets..."
+            echo "$KEYSTORE_BASE64" | base64 -d > release-key.jks
+          else
+            echo "Generating new permanent keystore for first release..."
+            keytool -genkey -v -keystore release-key.jks -keyalg RSA -keysize 2048 -validity 10000 \
+              -alias appkey -storepass 123456 -keypass 123456 \
+              -dname "CN=FootballJam, OU=Mobile, O=SportApp, L=Mashhad, S=Khorasan, C=IR"
+            base64 -w 0 release-key.jks > ../KEYSTORE_BASE64.txt
+          fi
+
           chmod +x gradlew
           ./gradlew assembleRelease \
             -Pandroid.injected.signing.store.file=$(pwd)/release-key.jks \
@@ -139,14 +142,17 @@ jobs:
             -Pandroid.injected.signing.key.alias=appkey \
             -Pandroid.injected.signing.key.password=123456
 
-      - name: Prepare APK and Store Icon
+      - name: Prepare APK for Upload
         run: |
           cp android/app/build/outputs/apk/release/app-release.apk ./FootballJam-Release.apk
 
-      - name: Upload Signed APK & 512px Store Icon
+      - name: Upload Signed APK, Store Icon & Keystore Backup
         uses: actions/upload-artifact@v4
         with:
           name: FootballJam-Bazaar-Myket-Package
+          if-no-files-found: ignore
           path: |
             ./FootballJam-Release.apk
             ./FootballJam-Icon-512x512.png
+            ./android/release-key.jks
+            ./KEYSTORE_BASE64.txt
