@@ -10,13 +10,14 @@ from bs4 import BeautifulSoup
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# منابع معتبر فوتبال ایران و جهان (بدون نمایش نام منبع در اپ)
 RSS_FEEDS = [
-    {"url": "https://www.varzesh3.com/rss/all", "lang": "fa", "default_cat": "iran"},
-    {"url": "https://www.mehrnews.com/rss/tp/9", "lang": "fa", "default_cat": "iran"},
-    {"url": "https://feeds.bbci.co.uk/sport/football/rss.xml", "lang": "en", "default_cat": "world"},
-    {"url": "https://www.skysports.com/rss/12040", "lang": "en", "default_cat": "world"},
-    {"url": "https://www.theguardian.com/football/rss", "lang": "en", "default_cat": "world"},
-    {"url": "https://www.espn.com/espn/rss/soccer/news", "lang": "en", "default_cat": "world"}
+    {"url": "https://feeds.bbci.co.uk/sport/football/rss.xml", "default_cat": "world"},
+    {"url": "https://www.theguardian.com/football/rss", "default_cat": "world"},
+    {"url": "https://www.espn.com/espn/rss/soccer/news", "default_cat": "world"},
+    {"url": "https://www.varzesh3.com/rss/all", "default_cat": "iran"},
+    {"url": "https://www.tasnimnews.com/fa/rss/feed/0/7/81/%D9%81%D9%88%D8%AA%D8%A8%D8%A7%D9%84-%D9%88-%D9%81%D9%88%D8%AA%D8%B3%D8%A7%D9%84", "default_cat": "iran"},
+    {"url": "https://www.mehrnews.com/rss/tp/24", "default_cat": "iran"}
 ]
 
 DATA_FILE = "news.json"
@@ -36,15 +37,31 @@ def translate_text(text, sl="en", tl="fa"):
     if not text or not text.strip():
         return ""
     text = text.strip()[:2500]
-    url = "https://translate.googleapis.com/translate_a/single"
-    params = {"client": "gtx", "sl": sl, "tl": tl, "dt": "t", "q": text}
+
+    # سرور اول (اصلی)
+    url1 = "https://translate.googleapis.com/translate_a/single"
+    params1 = {"client": "gtx", "sl": sl, "tl": tl, "dt": "t", "q": text}
     try:
-        res = requests.get(url, params=params, headers=HEADERS, timeout=12)
+        res = requests.get(url1, params=params1, headers=HEADERS, timeout=12)
         if res.status_code == 200:
             data = res.json()
             return "".join([part[0] for part in data[0] if part[0]]).strip()
+    except Exception:
+        pass
+
+    # سرور دوم (پشتیبان خودکار در صورت محدودیت موقت IP سرور اول)
+    url2 = "https://clients5.google.com/translate_a/t"
+    params2 = {"client": "dict-chrome-ex", "sl": sl, "tl": tl, "q": text}
+    try:
+        res2 = requests.get(url2, params=params2, headers=HEADERS, timeout=12)
+        if res2.status_code == 200:
+            data2 = res2.json()
+            if isinstance(data2, list) and len(data2) > 0:
+                if isinstance(data2[0], list):
+                    return "".join([part[0] for part in data2 if part and part[0]]).strip()
+                return str(data2[0]).strip()
     except Exception as e:
-        print(f"Translate error ({sl}->{tl}): {e}")
+        print(f"Backup translate error ({sl}->{tl}): {e}")
     return ""
 
 def clean_html(raw_html):
@@ -55,13 +72,13 @@ def clean_html(raw_html):
 
 def detect_category(title_fa, summary_fa, default_cat):
     text = f"{title_fa} {summary_fa}"
-    if any(k in text for k in ["نقل و انتقالات", "قرارداد", "پیوست", "تمدید", "پیشنهاد", "خرید جدید", "جدا شد"]):
+    if any(k in text for k in ["نقل و انتقالات", "قرارداد", "پیوست", "تمدید", "پیشنهاد", "فروش", "خرید"]):
         return "transfer"
-    if any(k in text for k in ["لیگ قهرمانان", "چمپیونزلیگ", "اروپا", "رئال مادرید", "بارسلونا", "منچستر", "آرسنال", "لیورپول", "بایرن", "اینتر", "میلان"]):
-        return "ucl" if "قهرمانان" in text or "چمپیونز" in text else "world"
-    if any(k in text for k in ["تیم ملی", "جام جهانی", "مقدماتی", "فیفا"]):
+    if any(k in text for k in ["لیگ قهرمانان", "چمپیونزلیگ", "اروپا", "یوفا"]):
+        return "ucl"
+    if any(k in text for k in ["تیم ملی", "جام جهانی", "فیفا", "مقدماتی", "قلعه‌نویی", "ملی‌پوش"]):
         return "national"
-    if any(k in text for k in ["پرسپولیس", "استقلال", "سپاهان", "تراکتور", "لیگ برتر ایران", "فدراسیون فوتبال", "داوران"]):
+    if any(k in text for k in ["پرسپولیس", "استقلال", "سپاهان", "تراکتور", "لیگ برتر ایران", "فدراسیون"]):
         return "iran"
     return default_cat
 
@@ -82,7 +99,7 @@ def scrape_full_article(url, fallback_summary, fallback_img):
             article_body = soup.find("article") or soup.find("main") or soup
             for p in article_body.find_all("p"):
                 txt = re.sub(r'\s+', ' ', p.get_text(strip=True))
-                if len(txt) > 55 and not any(skip in txt.lower() for skip in ["cookie", "subscribe", "newsletter", "all rights reserved", "کلیه حقوق", "انتشار مطلب"]):
+                if len(txt) > 55 and not any(skip in txt.lower() for skip in ["cookie", "subscribe", "newsletter", "all rights reserved", "terms of use", "privacy policy"]):
                     if txt not in paragraphs:
                         paragraphs.append(txt)
                 if len(paragraphs) >= 8:
@@ -121,7 +138,6 @@ def main():
 
     for feed_cfg in RSS_FEEDS:
         feed_url = feed_cfg["url"]
-        lang = feed_cfg["lang"]
         default_cat = feed_cfg["default_cat"]
         try:
             resp = requests.get(feed_url, headers=HEADERS, timeout=12, verify=False)
@@ -139,34 +155,24 @@ def main():
                 if not orig_title:
                     continue
 
-                if lang == "fa":
-                    non_football = ["کشتی", "والیبال", "بسکتبال", "تکواندو", "وزنه برداری", "وزنه‌برداری", "کاراته", "شطرنج", "تنیس", "دوومیدانی"]
-                    if any(nf in orig_title for nf in non_football):
-                        continue
-
                 rss_img = extract_rss_image(entry)
                 raw_paragraphs, best_image = scrape_full_article(link, orig_summary, rss_img)
+                clean_paras = [p.strip() for p in raw_paragraphs if len(p.strip()) > 15]
+                if not clean_paras and orig_summary:
+                    clean_paras = [orig_summary]
+                if not clean_paras:
+                    continue
 
-                if lang == "fa":
+                if is_persian(orig_title):
                     fa_title = orig_title
-                    fa_paragraphs = [p for p in raw_paragraphs if is_persian(p)]
-                    if not fa_paragraphs and is_persian(orig_summary):
-                        fa_paragraphs = [orig_summary]
-                    if not fa_paragraphs:
-                        continue
-
-                    # ترجمه اخبار فارسی به انگلیسی برای حالت انگلیسی اپ
-                    en_title = translate_text(fa_title, sl="fa", tl="en") or fa_title
+                    fa_paragraphs = clean_paras
+                    en_title = translate_text(orig_title, sl="fa", tl="en") or orig_title
                     full_fa_text = "\n\n".join(fa_paragraphs)
                     en_full_text = translate_text(full_fa_text, sl="fa", tl="en")
                     en_paragraphs = [p.strip() for p in en_full_text.split("\n") if len(p.strip()) > 15] or fa_paragraphs
                 else:
                     en_title = orig_title
-                    en_paragraphs = [p.strip() for p in raw_paragraphs if len(p.strip()) > 15]
-                    if not en_paragraphs and orig_summary:
-                        en_paragraphs = [orig_summary]
-
-                    # ترجمه اخبار انگلیسی به فارسی برای حالت فارسی اپ
+                    en_paragraphs = clean_paras
                     fa_title = translate_text(orig_title, sl="en", tl="fa")
                     if not is_persian(fa_title):
                         continue
@@ -177,9 +183,8 @@ def main():
                         fb = translate_text(orig_summary, sl="en", tl="fa")
                         if is_persian(fb):
                             fa_paragraphs = [fb]
-
-                if not fa_paragraphs:
-                    continue
+                    if not fa_paragraphs:
+                        continue
 
                 fa_summary = fa_paragraphs[0][:200] + "..." if len(fa_paragraphs[0]) > 200 else fa_paragraphs[0]
                 en_summary = en_paragraphs[0][:200] + "..." if len(en_paragraphs[0]) > 200 else en_paragraphs[0]
@@ -218,7 +223,7 @@ def main():
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(updated_news, f, ensure_ascii=False, indent=2)
 
-    print(f"Saved {len(updated_news)} bilingual articles. Latest News ID: {max_news_id}")
+    print(f"Saved {len(updated_news)} bilingual Football articles. Latest News ID: {max_news_id}")
 
 if __name__ == "__main__":
     main()
