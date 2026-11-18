@@ -27,9 +27,13 @@ jobs:
       - name: Run News Scraper & Translator
         run: python fetch_news.py
 
-      - name: Commit and Push Updated News
+      - name: Commit, Push & Purge jsDelivr Cache
         run: |
-          git config --global user.name "Football News Bot"
+          git config --global user.name "Football Jam Bot"
           git config --global user.email "bot@github.com"
           git add news.json
-          git diff --staged --quiet || (git commit -m "Auto-update football news" && git push)
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-update football news"
+            git push
+            curl -s "https://purge.jsdelivr.net/gh/frankalayari-beep/soccernews@main/news.json" || true
+          fi
